@@ -4,10 +4,14 @@
 /build_*/
 /release/
 /installer/Output/
+/out/
+/.vs/
 
 .vscode
 .idea
 
+
 # ignore generated files
 *.generated.*
 **/.Brewfile.lock.json
+CMakeSettings.json

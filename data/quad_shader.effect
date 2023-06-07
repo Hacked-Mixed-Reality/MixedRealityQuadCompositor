@@ -1,0 +1,68 @@
+uniform float4x4 ViewProj;
+uniform texture2d image;
+
+sampler_state def_sampler {
+    Filter   = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
+struct VertInOut {
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
+};
+
+struct VertOut {
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
+};
+
+VertOut VSDefault(VertInOut vert_in)
+{
+    VertOut vert_out;
+    vert_out.pos = mul(float4(vert_in.pos.xyz, 1.0), ViewProj);
+    vert_out.uv  = vert_in.uv;
+    return vert_out;
+}
+
+float4 PSDrawBare(VertOut vert_in) : SV_TARGET
+{
+    float2 uv = vert_in.uv;
+
+	// We're rewriting the top left foreground output by applying alpha from the top right to the bottom left.
+	// This has the advantage that it should minimise the seams between foreground and background.
+
+	float2 topRightMinUV = float2(0.5, 0.0); // Top right quadrant minimum UV coordinates
+	float2 topRightMaxUV = float2(1.0, 0.5); // Top right quadrant maximum UV coordinates
+
+	float2 bottomLeftMinUV = float2(0.0, 0.5); // Bottom left quadrant minimum UV coordinates
+	float2 bottomLeftMaxUV = float2(0.5, 1.0); // Bottom left quadrant maximum UV coordinates
+
+	// Get the corresponding coordinates for each of the other quadrants
+	float2 bottomLeftUV = lerp(bottomLeftMinUV, bottomLeftMaxUV, uv);
+	float2 topRightUV = lerp(topRightMinUV, topRightMaxUV, uv);
+	
+	// Retrieve the current color of the corresponding bottom left pixel
+	float4 bottomLeftPixel = image.Sample(def_sampler, bottomLeftUV);
+	
+	// Retrieve the brightness of the top right pixel
+	float4 topRightPixel = image.Sample(def_sampler, topRightUV);
+	float topRightBrightness = dot(topRightPixel.rgb, float3(0.299, 0.587, 0.114));
+
+	// Have to premultiply the alpha to get the correct effect and remove the nasty aliasing
+	bottomLeftPixel.rgb *= topRightBrightness;
+
+	// Modify the alpha channel of the bottom left pixel based on the top right brightness
+	bottomLeftPixel.a = topRightBrightness;
+	
+	return bottomLeftPixel;
+}
+
+technique Draw
+{
+    pass
+    {
+        vertex_shader = VSDefault(vert_in);
+        pixel_shader  = PSDrawBare(vert_in);
+    }
+}
