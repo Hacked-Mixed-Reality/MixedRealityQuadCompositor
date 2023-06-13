@@ -21,7 +21,8 @@ set(LINUX_MAINTAINER_EMAIL "HackedMixedReality@gmail.com")
 
 # Add your custom source files here - header files are optional and only required for visibility
 # e.g. in Xcode or Visual Studio
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/quad-compositor.c)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/quad-compositor.c src/quad-background-compositor.c
+                                             src/quad-foreground-compositor.c)
 
 # Import libobs as main plugin dependency
 find_package(libobs REQUIRED)
