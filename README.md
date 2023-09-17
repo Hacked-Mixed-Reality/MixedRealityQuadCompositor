@@ -24,6 +24,8 @@ And that should be it. All you need to do is make sure your sources are placed i
 
 You can save some resources by ticking the clone option `Active Source` and then making your original Quad Output hidden.
 
+**IMPORTANT**: If you experience black seams between the foreground and background components, right click on the Foreground element, go to the `Blending Method` submenu and choose `sRGB Off`.
+
 ## Building from source
 
 Nothing exotic going on here, so this can be built using the scripts in the scripts folder.
